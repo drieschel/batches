@@ -48,7 +48,7 @@ class Batch
     {
       throw new \Exception("The run files directory " . $runFilesDir . " does not exist");
     }
-    $this->runFile = $runFilesDir . '/batch_' . md5($name);    
+    $this->runFile = $runFilesDir . '/batch_' . $name;    
     if(!file_exists($this->runFile))
     {
       /* @var $tDate \DateTime */
@@ -98,7 +98,10 @@ class Batch
    */
   public function removeJob(Job $job)
   {
-    $this->jobs = array_diff($this->jobs, array($job));
+    $jobs = $this->jobs;
+    $this->jobs = array_map(function(Job $existingJob) use ($job){
+      return $existingJob !== $job;
+    }, $jobs);
   }
   
   /**
