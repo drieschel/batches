@@ -1,0 +1,22 @@
+{
+  "name": "drieschel/batches",
+  "type": "library",
+  "description": "lightweight php lib for creating batch jobs and integrating them easily in php applications.",
+  "keywords": ["batches", "batch jobs", "scheduling"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Immanuel Klinkenberg",
+      "email": "klinkenberg@speicher-werk.de",
+      "homepage": "https://github.com/drieschel"
+    }
+  ],
+  "require": {
+        "php": ">=5.3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "drieschel\\": "src/"
+    }
+  }
+}
