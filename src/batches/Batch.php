@@ -128,6 +128,17 @@ class Batch
     return $this->jobs;
   }
   
+  /**
+   * @return \DateTime
+   */
+  function getLastRun()
+  {
+    return $this->lastRun;
+  }
+    
+  /**
+   * @param \DateTime $lastRun
+   */
   function setLastRun(\DateTime $lastRun)
   {
     $this->lastRun = $lastRun;
