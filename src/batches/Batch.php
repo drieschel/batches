@@ -127,4 +127,9 @@ class Batch
   {
     return $this->jobs;
   }
+  
+  function setLastRun(\DateTime $lastRun)
+  {
+    $this->lastRun = $lastRun;
+  }
 }
