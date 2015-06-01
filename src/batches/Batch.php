@@ -99,9 +99,9 @@ class Batch
   public function removeJob(Job $job)
   {
     $jobs = $this->jobs;
-    $this->jobs = array_map(function(Job $existingJob) use ($job){
+    $this->jobs = array_filter($jobs, function(Job $existingJob) use ($job){
       return $existingJob !== $job;
-    }, $jobs);
+    });
   }
   
   /**
