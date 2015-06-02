@@ -16,14 +16,34 @@ class Batch
   protected $name;
   
   /**
-   * @var \DateInterval
+   * @var string
    */
-  protected $interval;
+  protected $runFile;
   
   /**
    * @var string
    */
-  protected $runFile;
+  protected $month = '*';
+  
+  /**
+   * @var string
+   */
+  protected $day = '*';
+  
+  /**
+   * @var string
+   */
+  protected $hour = '*';
+  
+  /**
+   * @var string
+   */
+  protected $minute = '*';
+
+  /**
+   * @var \DateTime
+   */
+  protected $executionDate;  
   
   /**
    * @var \DateTime
@@ -32,13 +52,11 @@ class Batch
   
   /**
    * @param string $name
-   * @param \DateInterval $interval
    * @param string $runFilesDir
    */
-  function __construct($name, \DateInterval $interval, $runFilesDir)
+  function __construct($name, $runFilesDir)
   {
     $this->name = $name;
-    $this->interval = $interval;
     if(empty($runFilesDir) || !is_string($runFilesDir))
     {
       throw new \Exception("The run files directory " . $runFilesDir . " has to be set correctly");
@@ -49,17 +67,28 @@ class Batch
       throw new \Exception("The run files directory " . $runFilesDir . " does not exist");
     }
     $this->runFile = $runFilesDir . '/batch_' . $name;    
-    if(!file_exists($this->runFile))
+    if(file_exists($this->runFile))
     {
       /* @var $tDate \DateTime */
       $tDate = new \DateTime();
-      $this->lastRun = $tDate->sub($interval);
-    }
-    else 
-    {
-      $tDate = new \DateTime();
       $this->lastRun = $tDate->setTimestamp(filemtime($this->runFile));
     }
+    $this->adjustExecutionDate();
+  }
+  
+  /**
+   * @param string $month
+   * @param string $day
+   * @param string $hour
+   * @param string $minute
+   */
+  public function executionPlan($month = '*', $day = '*', $hour = '*', $minute = '*')
+  {
+    $this->month = $month;
+    $this->day = $day;
+    $this->hour = $hour;
+    $this->minute = $minute;
+    $this->adjustExecutionDate();
   }
   
   /**
@@ -67,7 +96,8 @@ class Batch
    */
   public function run()
   {
-    if($this->lastRun->add($this->interval) > new \DateTime())
+    $now = new \DateTime();
+    if($this->lastRun instanceof \DateTime && $this->executionDate > $now && $this->lastRun >= $this->executionDate)
     {
       return;
     }
@@ -131,7 +161,7 @@ class Batch
   /**
    * @return \DateTime
    */
-  function getLastRun()
+  public function getLastRun()
   {
     return $this->lastRun;
   }
@@ -139,8 +169,14 @@ class Batch
   /**
    * @param \DateTime $lastRun
    */
-  function setLastRun(\DateTime $lastRun)
+  public function setLastRun(\DateTime $lastRun)
   {
     $this->lastRun = $lastRun;
+  }
+
+  protected function adjustExecutionDate()
+  {
+    $tDate = date('Y') . '-' . ($this->month !== '*') ? $this->month : date('m') . '-' . ($this->day !== '*') ? $this->day : date('d') . ' ' . ($this->hour !== '*') ? $this->hour : date('H') . ':' . ($this->minute !== '*') ? $this->minute : date('i') . ':00';
+    $this->executionDate = new \DateTime($tDate);
   }
 }
