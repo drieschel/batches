@@ -39,6 +39,11 @@ class Batch
    * @var string
    */
   protected $minute = '*';
+  
+  /**
+   * @var string
+   */
+  protected $second = '*';
 
   /**
    * @var \DateTime
@@ -81,13 +86,15 @@ class Batch
    * @param string $day
    * @param string $hour
    * @param string $minute
+   * @param string $second
    */
-  public function executionPlan($month = '*', $day = '*', $hour = '*', $minute = '*')
+  public function executionPlan($month = '*', $day = '*', $hour = '*', $minute = '*', $second = '*')
   {
     $this->month = $month;
     $this->day = $day;
     $this->hour = $hour;
     $this->minute = $minute;
+    $this->second = $second;
     $this->adjustExecutionDate();
   }
   
@@ -180,8 +187,9 @@ class Batch
     $day = $this->day !== '*' ? $this->day : date('d');
     $hour = $this->hour !== '*' ? $this->hour : date('H');
     $minute = $this->minute !== '*' ? $this->minute : date('i');
+    $second = $this->second !== '*' ? $this->second : date('s');
     
-    $tDate = sprintf('%04d-%02d-%02d %02d:%02d:%02d', date('Y'), $month, $day, $hour, $minute, '00');
+    $tDate = sprintf('%04d-%02d-%02d %02d:%02d:%02d', date('Y'), $month, $day, $hour, $minute, $second);
     $this->executionDate = new \DateTime($tDate);
   }
 }
