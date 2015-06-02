@@ -104,7 +104,7 @@ class Batch
   public function run()
   {
     $now = new \DateTime();
-    if($this->lastRun instanceof \DateTime && $this->lastRun >= $this->executionDate || $this->executionDate > $now)
+    if($this->lastRun instanceof \DateTime && ($this->lastRun >= $this->executionDate || $this->executionDate > $now && $now->sub($this->calculateExecutionInterval()) >= $this->lastRun))
     {
       return;
     }
@@ -183,13 +183,62 @@ class Batch
 
   protected function adjustExecutionDate()
   {
+    $year = date('Y');
     $month = $this->month !== '*' ? $this->month : date('m');
     $day = $this->day !== '*' ? $this->day : date('d');
     $hour = $this->hour !== '*' ? $this->hour : date('H');
     $minute = $this->minute !== '*' ? $this->minute : date('i');
     $second = $this->second !== '*' ? $this->second : date('s');
     
-    $tDate = sprintf('%04d-%02d-%02d %02d:%02d:%02d', date('Y'), $month, $day, $hour, $minute, $second);
+    $tDate = sprintf('%04d-%02d-%02d %02d:%02d:%02d', $year, $month, $day, $hour, $minute, $second);
     $this->executionDate = new \DateTime($tDate);
+  }
+  
+  /**
+   * @return \DateInterval
+   */
+  protected function calculateExecutionInterval()
+  {
+    $this->adjustExecutionDate();    
+    $biggestFound = false;
+    $year = date('Y');
+    if($this->month !== '*')
+    {
+      $year -= 1;
+      $biggestFound = true;
+    }
+    
+    $month = $this->month !== '*' ? $this->month : date('m');
+    if(!$biggestFound && $this->day !== '*')
+    {
+      $month -= 1;
+      $biggestFound = true;
+    }
+        
+    $day = $this->day !== '*' ? $this->day : date('d');
+    if(!$biggestFound && $this->hour !== '*')
+    {
+      $day -= 1;
+      $biggestFound = true;
+    }
+    
+    $hour = $this->hour !== '*' ? $this->hour : date('H');
+    if(!$biggestFound && $this->minute !== '*')
+    {
+      $hour -= 1;
+      $biggestFound = true;
+    }    
+    
+    $minute = $this->minute !== '*' ? $this->minute : date('i');
+    if(!$biggestFound && $this->second !== '*')
+    {
+      $minute -= 1;
+      $biggestFound = true;
+    }
+    
+    $second = $this->second !== '*' ? $this->second : date('s');    
+    $tDate = sprintf('%04d-%02d-%02d %02d:%02d:%02d', $year, $month, $day, $hour, $minute, $second);
+    $lastExecution = new \DateTime($tDate);
+    return $this->executionDate->diff($lastExecution, true);
   }
 }
