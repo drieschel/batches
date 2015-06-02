@@ -175,7 +175,7 @@ class Batch
 
   protected function adjustExecutionDate()
   {
-    $tDate = date('Y') . '-' . (($this->month !== '*') ? $this->month : date('m')) . '-' . (($this->day !== '*') ? $this->day : date('d')) . ' ' . (($this->hour !== '*') ? $this->hour : date('H')) . ':' . (($this->minute !== '*') ? $this->minute : date('i')) . ':00';
+    $tDate = date('Y') . '-' . (($this->month !== '*') ? sprintf("%02d", $this->month) : date('m')) . '-' . (($this->day !== '*') ? sprintf("%02d", $this->day) : date('d')) . ' ' . (($this->hour !== '*') ? sprintf("%02d", $this->hour) : date('H')) . ':' . (($this->minute !== '*') ? $this->minute : date('i')) . ':00';
     $this->executionDate = new \DateTime($tDate);
   }
 }
