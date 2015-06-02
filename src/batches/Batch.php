@@ -104,7 +104,7 @@ class Batch
   public function run()
   {
     $now = new \DateTime();
-    if($this->lastRun instanceof \DateTime && ($this->lastRun >= $this->executionDate || $this->executionDate > $now && $now->sub($this->calculateExecutionInterval()) >= $this->lastRun))
+    if($this->lastRun instanceof \DateTime && ($this->lastRun >= $this->executionDate || $this->executionDate > $now && $now->sub($this->calculateExecutionInterval()) < $this->lastRun))
     {
       return;
     }
