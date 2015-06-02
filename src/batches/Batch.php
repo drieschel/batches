@@ -96,7 +96,8 @@ class Batch
    */
   public function run()
   {
-    if($this->lastRun instanceof \DateTime && $this->lastRun >= $this->executionDate)
+    $now = new \DateTime();
+    if($this->lastRun instanceof \DateTime && $this->lastRun >= $this->executionDate || $this->executionDate > $now)
     {
       return;
     }
