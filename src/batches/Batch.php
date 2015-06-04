@@ -71,6 +71,7 @@ class Batch
     {
       throw new \Exception("The run files directory " . $runFilesDir . " does not exist");
     }
+    
     $this->runFile = $runFilesDir . '/batch_' . $name;    
     if(file_exists($this->runFile))
     {
@@ -104,7 +105,10 @@ class Batch
   public function run()
   {
     $now = new \DateTime();
-    if($this->lastRun instanceof \DateTime && ($this->lastRun >= $this->executionDate || $this->executionDate > $now && $now->sub($this->calculateExecutionInterval()) < $this->lastRun))
+    $isLastRunGreaterEqualExecutionDate = $this->lastRun >= $this->executionDate;
+    $isExecutionDateGreaterNow = $this->executionDate > $now;
+    $isLastExecutionDateSmallerEqualLastRun = $now->sub($this->calculateExecutionInterval()) <= $this->lastRun;
+    if($this->lastRun instanceof \DateTime && ($isLastRunGreaterEqualExecutionDate || $isExecutionDateGreaterNow && $isLastExecutionDateSmallerEqualLastRun))
     {
       return;
     }
@@ -115,8 +119,9 @@ class Batch
       $job->execute();
     }
     $endTime = time();
-    $result = array('executed_at' => date('d.m.Y H:i:s'), 'status' => 'success', 'job_amount' => count($this->jobs), 'runtime' => $endTime - $startTime);    
+    $result = array('executed_at' => date('d.m.Y H:i:s'), 'status' => 'success', 'job_amount' => count($this->jobs), 'runtime' => ($endTime - $startTime) . 's');    
     file_put_contents($this->runFile, json_encode($result));
+    $this->lastRun = new \DateTime();
   }
   
   /**
@@ -236,7 +241,7 @@ class Batch
       $biggestFound = true;
     }
     
-    $second = $this->second !== '*' ? $this->second : date('s');    
+    $second = $this->second !== '*' ? $this->second : date('s');
     $tDate = sprintf('%04d-%02d-%02d %02d:%02d:%02d', $year, $month, $day, $hour, $minute, $second);
     $lastExecution = new \DateTime($tDate);
     return $this->executionDate->diff($lastExecution, true);
