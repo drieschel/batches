@@ -79,7 +79,6 @@ class Batch
       $tDate = new \DateTime();
       $this->lastRun = $tDate->setTimestamp(filemtime($this->runFile));
     }
-    $this->adjustExecutionDate();
   }
   
   /**
@@ -96,7 +95,6 @@ class Batch
     $this->hour = $hour;
     $this->minute = $minute;
     $this->second = $second;
-    $this->adjustExecutionDate();
   }
   
   /**
@@ -104,24 +102,22 @@ class Batch
    */
   public function run()
   {
+    $this->adjustExecutionDate();
+    $executionInterval = $this->calculateExecutionInterval();
     $now = new \DateTime();
-    $isLastRunGreaterEqualExecutionDate = $this->lastRun >= $this->executionDate;
-    $isExecutionDateGreaterNow = $this->executionDate > $now;
-    $isLastExecutionDateSmallerEqualLastRun = $now->sub($this->calculateExecutionInterval()) <= $this->lastRun;
-    if($this->lastRun instanceof \DateTime && ($isLastRunGreaterEqualExecutionDate || $isExecutionDateGreaterNow && $isLastExecutionDateSmallerEqualLastRun))
-    {
-      return;
-    }
     
-    $startTime = time();
-    foreach($this->jobs as $job)
+    if(!$this->lastRun instanceof \DateTime || $now->sub($executionInterval) >= $this->lastRun || $now >= $this->executionDate && $this->lastRun < $this->executionDate)
     {
-      $job->execute();
+      $startTime = time();
+      foreach ($this->jobs as $job)
+      {
+        $job->execute();
+      }
+      $endTime = time();
+      $result = array('executed_at' => date('d.m.Y H:i:s'), 'status' => 'success', 'job_amount' => count($this->jobs), 'runtime' => ($endTime - $startTime) . 's');
+      file_put_contents($this->runFile, json_encode($result));
+      $this->lastRun = new \DateTime();
     }
-    $endTime = time();
-    $result = array('executed_at' => date('d.m.Y H:i:s'), 'status' => 'success', 'job_amount' => count($this->jobs), 'runtime' => ($endTime - $startTime) . 's');    
-    file_put_contents($this->runFile, json_encode($result));
-    $this->lastRun = new \DateTime();
   }
   
   /**
@@ -204,7 +200,11 @@ class Batch
    */
   protected function calculateExecutionInterval()
   {
-    $this->adjustExecutionDate();    
+    if(!$this->executionDate instanceof \DateTime)
+    {
+      throw new \Exception("Execution date has to be adjusted first");
+    }
+    
     $biggestFound = false;
     $year = date('Y');
     if($this->month !== '*')
