@@ -88,7 +88,7 @@ class Batch
    * @param string $minute
    * @param string $second
    */
-  public function executionPlan($month = '*', $day = '*', $hour = '*', $minute = '*', $second = '*')
+  public function executionPlan($month, $day, $hour, $minute, $second)
   {
     $this->month = $month;
     $this->day = $day;
@@ -105,8 +105,10 @@ class Batch
     $this->adjustExecutionDate();
     $executionInterval = $this->calculateExecutionInterval();
     $now = new \DateTime();
+    $nowSubExecutionInterval = clone $now;
+    $nowSubExecutionInterval->sub($executionInterval);
     
-    if(!$this->lastRun instanceof \DateTime || $now->sub($executionInterval) >= $this->lastRun || $now >= $this->executionDate && $this->lastRun < $this->executionDate)
+    if(!$this->lastRun instanceof \DateTime || $nowSubExecutionInterval >= $this->lastRun || $now >= $this->executionDate && $this->lastRun < $this->executionDate)
     {
       $startTime = time();
       foreach ($this->jobs as $job)
@@ -205,45 +207,25 @@ class Batch
       throw new \Exception("Execution date has to be adjusted first");
     }
     
-    $biggestFound = false;
-    $year = date('Y');
     if($this->month !== '*')
     {
-      $year -= 1;
-      $biggestFound = true;
+      $interval = 'P1Y';
     }
-    
-    $month = $this->month !== '*' ? $this->month : date('m');
-    if(!$biggestFound && $this->day !== '*')
+    else if($this->day !== '*')
     {
-      $month -= 1;
-      $biggestFound = true;
+      $interval = 'P1M';
     }
-        
-    $day = $this->day !== '*' ? $this->day : date('d');
-    if(!$biggestFound && $this->hour !== '*')
+    else if($this->hour !== '*')
     {
-      $day -= 1;
-      $biggestFound = true;
+      $interval = 'P1D';
     }
-    
-    $hour = $this->hour !== '*' ? $this->hour : date('H');
-    if(!$biggestFound && $this->minute !== '*')
+    else if($this->minute !== '*')
     {
-      $hour -= 1;
-      $biggestFound = true;
-    }    
-    
-    $minute = $this->minute !== '*' ? $this->minute : date('i');
-    if(!$biggestFound && $this->second !== '*')
-    {
-      $minute -= 1;
-      $biggestFound = true;
+      $interval = 'PT1H';
     }
-    
-    $second = $this->second !== '*' ? $this->second : date('s');
-    $tDate = sprintf('%04d-%02d-%02d %02d:%02d:%02d', $year, $month, $day, $hour, $minute, $second);
-    $lastExecution = new \DateTime($tDate);
-    return $this->executionDate->diff($lastExecution, true);
+    else {
+      $interval = 'PT1S';
+    }
+    return new \DateInterval($interval);
   }
 }

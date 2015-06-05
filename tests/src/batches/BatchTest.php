@@ -19,6 +19,11 @@ class BatchTest extends \PHPUnit_Framework_TestCase
   protected $runFilesDir;
   
   /**
+   * @var string 
+   */
+  protected $runFilename = 'batch_test';
+  
+  /**
    * Sets up the fixture, for example, opens a network connection.
    * This method is called before a test is executed.
    */
@@ -40,14 +45,12 @@ class BatchTest extends \PHPUnit_Framework_TestCase
    * @covers drieschel\batches\Batch::run
    */
   public function testFirstRun()
-  {
-    
-    $file = $this->runFilesDir . '/batch_test';
+  {    
+    $file = $this->runFilesDir . '/' . $this->runFilename;
     if(is_file($file))
     {
       unlink($file);
-    }
-    
+    }    
     $batch = new Batch('test', $this->runFilesDir);
     $jobMock = $this->getMockBuilder('\\drieschel\\batches\\Job')->getMock();
     $batch->addJob($jobMock);
@@ -60,7 +63,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
   public function testRunWithIntervalTimeExceeded()
   {
     $lastModifyDate = new \DateTime('2015-01-01');
-    $file = $this->runFilesDir . '/batch_test';
+    $file = $this->runFilesDir . '/' . $this->runFilename;
     touch($file, $lastModifyDate->getTimestamp());
     $jobMock = $this->getMockBuilder('\\drieschel\\batches\\Job')->getMock();
     $batch = new Batch('test', $this->runFilesDir);    
@@ -80,7 +83,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
   {
     $halfHourAgo = new \DateTime('@' . (time() - 1800));    
     $oneHourAgo = new \DateTime('@' . (time() - 3600));
-    $file = $this->runFilesDir . '/batch_test';
+    $file = $this->runFilesDir . '/' . $this->runFilename;
     touch($file, $halfHourAgo->getTimestamp());
     $jobMock = $this->getMockBuilder('\\drieschel\\batches\\Job')->getMock();
     $batch = new Batch('test', $this->runFilesDir);
@@ -97,9 +100,9 @@ class BatchTest extends \PHPUnit_Framework_TestCase
    */
   public function testRunWithExecutionDateReached()
   {
-    $halfHourAgo = new \DateTime('@' . (time() - 1800));    
+    $halfHourAgo = new \DateTime('@' . (time() - 1800));
     $oneHourAgo = new \DateTime('@' . (time() - 3600));
-    $file = $this->runFilesDir . '/batch_test';
+    $file = $this->runFilesDir . '/' . $this->runFilename;
     touch($file, $oneHourAgo->getTimestamp());
     $jobMock = $this->getMockBuilder('\\drieschel\\batches\\Job')->getMock();
     $batch = new Batch('test', $this->runFilesDir);
