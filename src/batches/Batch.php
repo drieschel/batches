@@ -75,9 +75,7 @@ class Batch
     $this->runFile = $runFilesDir . '/batch_' . $name;    
     if(file_exists($this->runFile))
     {
-      /* @var $tDate \DateTime */
-      $tDate = new \DateTime();
-      $this->lastRun = $tDate->setTimestamp(filemtime($this->runFile));
+      $this->lastRun = new \DateTime('@' . filemtime($this->runFile));
     }
   }
   
@@ -116,9 +114,9 @@ class Batch
         $job->execute();
       }
       $endTime = time();
-      $result = array('executed_at' => date('d.m.Y H:i:s'), 'status' => 'success', 'job_amount' => count($this->jobs), 'runtime' => ($endTime - $startTime) . 's');
+      $result = array('executed_at' => $now->format('d.m.Y H:i:s'), 'status' => 'success', 'job_amount' => count($this->jobs), 'runtime' => ($endTime - $startTime) . 's');
       file_put_contents($this->runFile, json_encode($result));
-      $this->lastRun = new \DateTime();
+      $this->lastRun = $now;
     }
   }
   
