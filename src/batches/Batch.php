@@ -200,11 +200,6 @@ class Batch
    */
   protected function calculateExecutionInterval()
   {
-    if(!$this->executionDate instanceof \DateTime)
-    {
-      throw new \Exception("Execution date has to be adjusted first");
-    }
-    
     if($this->month !== '*')
     {
       $interval = 'P1Y';
