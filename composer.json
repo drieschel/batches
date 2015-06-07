@@ -1,7 +1,6 @@
 {
   "name": "drieschel/batches",
   "type": "library",
-  "version": "0.0.1",
   "description": "lightweight php lib for creating batch jobs and integrating them easily in php applications.",
   "keywords": ["batches", "batch jobs", "scheduling"],
   "license": "MIT",
