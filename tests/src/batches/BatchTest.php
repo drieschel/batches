@@ -24,12 +24,22 @@ class BatchTest extends \PHPUnit_Framework_TestCase
   protected $runFilename = 'batch_test';
   
   /**
+   * @var string
+   */
+  protected $runFile;
+  
+  /**
    * Sets up the fixture, for example, opens a network connection.
    * This method is called before a test is executed.
    */
   protected function setUp()
   {
     $this->runFilesDir = __DIR__ . '/runFiles';
+    $this->runFile = $this->runFilesDir . '/' . $this->runFilename;
+    if(is_file($this->runFile))
+    {
+      unlink($this->runFile);
+    }   
   }
 
   /**
@@ -46,16 +56,11 @@ class BatchTest extends \PHPUnit_Framework_TestCase
    */
   public function testFirstRun()
   {    
-    $file = $this->runFilesDir . '/' . $this->runFilename;
-    if(is_file($file))
-    {
-      unlink($file);
-    }    
     $batch = new Batch('test', $this->runFilesDir);
     $jobMock = $this->getMockBuilder('\\drieschel\\batches\\Job')->getMock();
     $batch->addJob($jobMock);
     $batch->run();    
-    $this->assertTrue(is_file($file));
+    $this->assertTrue(is_file($this->runFile));
   }
   /**
    * @covers drieschel\batches\Batch::run
@@ -63,8 +68,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
   public function testRunWithIntervalTimeExceeded()
   {
     $lastModifyDate = new \DateTime('2015-01-01');
-    $file = $this->runFilesDir . '/' . $this->runFilename;
-    touch($file, $lastModifyDate->getTimestamp());
+    touch($this->runFile, $lastModifyDate->getTimestamp());
     $jobMock = $this->getMockBuilder('\\drieschel\\batches\\Job')->getMock();
     $batch = new Batch('test', $this->runFilesDir);    
     $batch->executionPlan('*', '*', '1', '0', '0');
@@ -72,7 +76,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
     $now = new \DateTime();
     $batch->run();
     clearstatcache();
-    $lastRunTime = filemtime($file);
+    $lastRunTime = filemtime($this->runFile);
     $this->assertTrue($lastRunTime >= $now->getTimestamp());
   }
   
@@ -83,8 +87,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
   {
     $halfHourAgo = new \DateTime('@' . (time() - 1800));    
     $oneHourAgo = new \DateTime('@' . (time() - 3600));
-    $file = $this->runFilesDir . '/' . $this->runFilename;
-    touch($file, $halfHourAgo->getTimestamp());
+    touch($this->runFile, $halfHourAgo->getTimestamp());
     $jobMock = $this->getMockBuilder('\\drieschel\\batches\\Job')->getMock();
     $batch = new Batch('test', $this->runFilesDir);
     $batch->executionPlan('*', '*', '*', $oneHourAgo->format('m'), '0');
@@ -92,7 +95,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
     $batch->run();
     $oldTime = $halfHourAgo->getTimestamp();
     clearstatcache();
-    $newTime = filemtime($file);
+    $newTime = filemtime($this->runFile);
     $this->assertTrue($oldTime === $newTime);
   }
   /**
@@ -102,8 +105,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
   {
     $halfHourAgo = new \DateTime('@' . (time() - 1800));
     $oneHourAgo = new \DateTime('@' . (time() - 3600));
-    $file = $this->runFilesDir . '/' . $this->runFilename;
-    touch($file, $oneHourAgo->getTimestamp());
+    touch($this->runFile, $oneHourAgo->getTimestamp());
     $jobMock = $this->getMockBuilder('\\drieschel\\batches\\Job')->getMock();
     $batch = new Batch('test', $this->runFilesDir);
     $batch->executionPlan('*', '*', '*', $halfHourAgo->format('m'), '0');
@@ -111,7 +113,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
     $now = new \DateTime();    
     $batch->run();
     clearstatcache();
-    $lastRunTime = filemtime($file);
+    $lastRunTime = filemtime($this->runFile);
     $this->assertTrue($lastRunTime >= $now->getTimestamp());
   }
 
